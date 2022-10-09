@@ -42,7 +42,7 @@
 */
 
 
-#include "Gamma_Table.h"
+#include "Dummy Colorama.h"
 #include"AEGP_SuiteHandler.h"
 
 BOOL WINAPI dummyChooseColor(LPCHOOSECOLOR lpcc) {
@@ -97,7 +97,7 @@ GlobalSetup(
 		PF_OutFlag_USE_OUTPUT_EXTENT |
 		PF_OutFlag_CUSTOM_UI;
 
-	// out_data->out_flags2 = PF_OutFlag2_SUPPORTS_THREADED_RENDERING;
+	out_data->out_flags2 = PF_OutFlag2_SUPPORTS_THREADED_RENDERING;
 
 	AEGP_SuiteHandler	suites(in_data->pica_basicP);
 

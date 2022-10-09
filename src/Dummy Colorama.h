@@ -25,6 +25,7 @@
 #include "AEConfig.h"
 
 #ifdef AE_OS_WIN
+#define WINDOWS_IGNORE_PACKING_MISMATCH
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include<commdlg.h>
@@ -40,8 +41,8 @@
 #include<iostream>
 
 #define	MAJOR_VERSION	1
-#define	MINOR_VERSION	0
-#define	BUG_VERSION		1
+#define	MINOR_VERSION	1
+#define	BUG_VERSION		0
 #define	STAGE_VERSION	PF_Stage_DEVELOP
 #define	BUILD_VERSION	1
 
@@ -58,12 +59,12 @@ enum {
 };
 
 typedef struct {
-	PF_Fixed	gamma_val;	
+	PF_Fixed	gamma_val;
 	A_u_char	lut[256];
 } Gamma_Table;
 
-typedef struct {				
-	unsigned char		*lut;
+typedef struct {
+	unsigned char* lut;
 } GammaInfo;
 
 #define	GAMMA_MIN		(0)	
@@ -74,21 +75,21 @@ typedef struct {
 extern "C" {
 
 	DllExport
-	PF_Err 
-	EffectMain(
-		PF_Cmd			cmd,
-		PF_InData		*in_data,
-		PF_OutData		*out_data,
-		PF_ParamDef		*params[],
-		PF_LayerDef		*output);
+		PF_Err
+		EffectMain(
+			PF_Cmd			cmd,
+			PF_InData* in_data,
+			PF_OutData* out_data,
+			PF_ParamDef* params[],
+			PF_LayerDef* output);
 
 }
-	
+
 BOOL WINAPI dummyChooseColor(LPCHOOSECOLOR);
 
 PF_Err(*lpColorPickerfn)(const A_char* dialog_titleZ0,
-						const PF_PixelFloat* sample_colorP,
-						PF_Boolean				use_ws_to_monitor_xformB,
-						PF_PixelFloat* new_colorP);
+	const PF_PixelFloat* sample_colorP,
+	PF_Boolean				use_ws_to_monitor_xformB,
+	PF_PixelFloat* new_colorP);
 
 #endif // GAMMA_TABLE_H
