@@ -1,4 +1,4 @@
-/*******************************************************************/
+ï»¿/*******************************************************************/
 /*                                                                 */
 /*                      ADOBE CONFIDENTIAL                         */
 /*                   _ _ _ _ _ _ _ _ _ _ _ _ _                     */
@@ -41,21 +41,24 @@
 	1.5			Added new entry point									zal			9/15/2017
 */
 
-
 #include "Dummy Colorama.h"
 #include"AEGP_SuiteHandler.h"
 
-BOOL WINAPI dummyChooseColor(LPCHOOSECOLOR lpcc) {
-	
-	PF_PixelFloat nCol = { 0.0,0.0,0.0 };
-	unsigned char r = 0, g = 0, b = 0;
-	if (lpColorPickerfn("Dummy Color Picker", &nCol, 0, &nCol) != PF_Interrupt_CANCEL) {
-		
+BOOL WINAPI dummyChooseColor(const LPCHOOSECOLOR lpcc) {
+	PF_PixelFloat nCol{};
+	const DWORD initCol = lpcc->rgbResult;
+	nCol.red = (initCol >> 0 & 0x00FF) / 255.0f;
+	nCol.green = ((initCol >> 8) & 0x00FF) / 255.0f;
+	nCol.blue = ((initCol >> 16) & 0x00FF) / 255.0f;
+	nCol.alpha = 1.0f;
+	DWORD resCol = initCol;
+	if (lpColorPickerfn("Dummy Color Picker", &nCol, true, &nCol) != PF_Interrupt_CANCEL) {
+		unsigned char r = 0, g = 0, b = 0;
 		r = nCol.red * 255;
 		g = nCol.green * 255;
 		b = nCol.blue * 255;
+		resCol = b << 16 | g << 8 | r;
 	}
-	const DWORD resCol = b << 16 | g << 8 | r;
 	lpcc->rgbResult = resCol;
 	return TRUE;
 };
@@ -108,24 +111,18 @@ GlobalSetup(
 	lpColorPickerfn = suites.AppSuite5()->PF_AppColorPickerDialog;
 
 	if (lpColorPickerfn != NULL) {
-		
+
 		// get target function adress
 		auto hComdlgDll = LoadLibrary("comdlg32.dll");
 		FARPROC lpChooseColor = NULL;
 		if (hComdlgDll != NULL) {
-			
+
 			lpChooseColor = GetProcAddress(hComdlgDll, "ChooseColorW");
 
 			if (lpChooseColor != NULL) {
-				
 				// start hijack
-				// ¿ªÊ¼ÊÂÎñ
 				DetourTransactionBegin();
-				// ¸üÐÂÏß³ÌÐÅÏ¢  
-				DetourUpdateThread(GetCurrentThread());
-				// ½«À¹½ØµÄº¯Êý¸½¼Óµ½Ô­º¯ÊýµÄµØÖ·ÉÏ,ÕâÀï¿ÉÒÔÀ¹½Ø¶à¸öº¯Êý¡£
-				std::cout << "res code:" << DetourAttach(&(PVOID&)lpChooseColor, dummyChooseColor) << std::endl;
-				// ½áÊøÊÂÎñ
+				DetourAttach(&(PVOID&)lpChooseColor, dummyChooseColor);
 				DetourTransactionCommit();
 			}
 		}
@@ -141,33 +138,16 @@ GlobalSetdown(
 	PF_LayerDef* output)
 {
 	PF_Err	err = PF_Err_NONE;
+	auto hComdlgDll = LoadLibrary("comdlg32.dll");
+	FARPROC lpChooseColor = NULL;
+	if (hComdlgDll != NULL) {
 
-	if (lpColorPickerfn == NULL) {
-	AEGP_SuiteHandler	suites(in_data->pica_basicP);
-	// Premiere Pro/Elements don't support PF_AppColorPickerDialog
-	lpColorPickerfn = suites.AppSuite5()->PF_AppColorPickerDialog;
-	}
-	else{
+		lpChooseColor = GetProcAddress(hComdlgDll, "ChooseColorW");
 
-		// get target function adress
-		auto hComdlgDll = LoadLibrary("comdlg32.dll");
-		FARPROC lpChooseColor = NULL;
-		if (hComdlgDll != NULL) {
-
-			lpChooseColor = GetProcAddress(hComdlgDll, "ChooseColorW");
-
-			if (lpChooseColor != NULL) {
-
-				// start hijack
-				// ¿ªÊ¼ÊÂÎñ
-				DetourTransactionBegin();
-				// ¸üÐÂÏß³ÌÐÅÏ¢  
-				DetourUpdateThread(GetCurrentThread());
-				// ½«À¹½ØµÄº¯Êý¸½¼Óµ½Ô­º¯ÊýµÄµØÖ·ÉÏ,ÕâÀï¿ÉÒÔÀ¹½Ø¶à¸öº¯Êý¡£
-				std::cout << "res code:" << DetourAttach(&(PVOID&)lpChooseColor, dummyChooseColor) << std::endl;
-				// ½áÊøÊÂÎñ
-				DetourTransactionCommit();
-			}
+		if (lpChooseColor != NULL) {
+			DetourTransactionBegin();
+			DetourDetach(&(PVOID&)lpChooseColor, dummyChooseColor);
+			DetourTransactionCommit();
 		}
 	}
 	return err;
@@ -185,28 +165,6 @@ ParamsSetup(
 	return err;
 }
 
-
-static PF_Err
-SequenceSetup(
-	PF_InData* in_data,
-	PF_OutData* out_data,
-	PF_ParamDef* params[],
-	PF_LayerDef* output)
-{
-	return PF_Err_NONE;
-}
-
-static PF_Err
-SequenceSetdown(
-	PF_InData* in_data,
-	PF_OutData* out_data,
-	PF_ParamDef* params[],
-	PF_LayerDef* output)
-{
-	return PF_Err_NONE;
-}
-
-
 static PF_Err
 SequenceResetup(
 	PF_InData* in_data,
@@ -214,9 +172,9 @@ SequenceResetup(
 	PF_ParamDef* params[],
 	PF_LayerDef* output)
 {
+	std::cout << "seq resetup\n";
 	if (lpColorPickerfn == NULL) {
 		AEGP_SuiteHandler	suites(in_data->pica_basicP);
-		// Premiere Pro/Elements don't support PF_AppColorPickerDialog
 		lpColorPickerfn = suites.AppSuite5()->PF_AppColorPickerDialog;
 	}
 	else {
@@ -229,45 +187,13 @@ SequenceResetup(
 			lpChooseColor = GetProcAddress(hComdlgDll, "ChooseColorW");
 
 			if (lpChooseColor != NULL) {
-
-				// start hijack
-				// ¿ªÊ¼ÊÂÎñ
 				DetourTransactionBegin();
-				// ¸üÐÂÏß³ÌÐÅÏ¢  
-				DetourUpdateThread(GetCurrentThread());
-				// ½«À¹½ØµÄº¯Êý¸½¼Óµ½Ô­º¯ÊýµÄµØÖ·ÉÏ,ÕâÀï¿ÉÒÔÀ¹½Ø¶à¸öº¯Êý¡£
-				std::cout << "res code:" << DetourAttach(&(PVOID&)lpChooseColor, dummyChooseColor) << std::endl;
-				// ½áÊøÊÂÎñ
+				DetourAttach(&(PVOID&)lpChooseColor, dummyChooseColor);
 				DetourTransactionCommit();
 			}
 		}
 	}
 	return PF_Err_NONE;
-}
-
-// Computes the gamma-corrected pixel given the lookup table.
-
-static PF_Err
-GammaFunc(
-	void* refcon,
-	A_long x,
-	A_long y,
-	PF_Pixel* inP,
-	PF_Pixel* outP)
-{
-	PF_Err		err = PF_Err_NONE;
-	GammaInfo* giP = (GammaInfo*)refcon;
-
-	if (giP) {
-		outP->alpha = inP->alpha;
-		outP->red = giP->lut[inP->red];
-		outP->green = giP->lut[inP->green];
-		outP->blue = giP->lut[inP->blue];
-	}
-	else {
-		err = PF_Err_BAD_CALLBACK_PARAM;
-	}
-	return err;
 }
 
 static PF_Err
@@ -327,12 +253,6 @@ EffectMain(
 	case PF_Cmd_PARAMS_SETUP:
 		err = ParamsSetup(in_data, out_data, params, output);
 		break;
-	case PF_Cmd_SEQUENCE_SETUP:
-		err = SequenceSetup(in_data, out_data, params, output);
-		break;
-	case PF_Cmd_SEQUENCE_SETDOWN:
-		err = SequenceSetdown(in_data, out_data, params, output);
-		break;
 	case PF_Cmd_SEQUENCE_RESETUP:
 		err = SequenceResetup(in_data, out_data, params, output);
 		break;
@@ -342,29 +262,3 @@ EffectMain(
 	}
 	return err;
 }
-
-#ifdef AE_OS_WIN
-BOOL WINAPI DllMain(HINSTANCE hDLL, DWORD dwReason, LPVOID lpReserved)
-{
-	HINSTANCE my_instance_handle = (HINSTANCE)0;
-
-	switch (dwReason)
-	{
-	case DLL_PROCESS_ATTACH:
-		my_instance_handle = hDLL;
-		break;
-
-	case DLL_THREAD_ATTACH:
-		my_instance_handle = hDLL;
-		break;
-	case DLL_THREAD_DETACH:
-		my_instance_handle = 0;
-		break;
-	case DLL_PROCESS_DETACH:
-		my_instance_handle = 0;
-		break;
-	}
-	return(TRUE);
-}
-#endif
-

@@ -13,11 +13,11 @@ resource 'PiPL' (16000) {
 		},
 		/* [2] */
 		Name {
-			"Gamma (Table)"
+			"Colorama(dummy)"
 		},
 		/* [3] */
 		Category {
-			"Sample Plug-ins"
+			"Dolag Plug-ins"
 		},
 #ifdef AE_OS_WIN
 	#ifdef AE_PROC_INTELx64
@@ -26,7 +26,6 @@ resource 'PiPL' (16000) {
 #else
 	#ifdef AE_OS_MAC
 		CodeMacIntel64 {"EffectMain"},
-		CodeMacARM64 {"EffectMain"},
 	#endif
 #endif
 		/* [6] */
@@ -41,7 +40,7 @@ resource 'PiPL' (16000) {
 		},
 		/* [8] */
 		AE_Effect_Version {
-			(1 << 19) + (1 << 15) + (0 << 11) + 1	/* 2.0 */
+			(2 << 19) + (0 << 15) + (0 << 11) + 3
 		},
 		/* [9] */
 		AE_Effect_Info_Flags {
@@ -49,11 +48,11 @@ resource 'PiPL' (16000) {
 		},
 		/* [10] */
 		AE_Effect_Global_OutFlags {
-			1088
+			1088+32768
 		},
 		/* [11] */
 		AE_Effect_Match_Name {
-			"ADBE Gamma"
+			"ADBE Colorama(dummy)"
 		},
 		/* [12] */
 		AE_Reserved_Info {
@@ -61,7 +60,7 @@ resource 'PiPL' (16000) {
 		},
 		/* [13] */
 		AE_Effect_Global_OutFlags_2 {
-			0x8000000
+			134217728
 		},
 	}
 };

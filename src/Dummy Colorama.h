@@ -40,37 +40,14 @@
 #include "Param_Utils.h"
 #include<iostream>
 
-#define	MAJOR_VERSION	1
-#define	MINOR_VERSION	1
+#define	MAJOR_VERSION	2
+#define	MINOR_VERSION	0
 #define	BUG_VERSION		0
 #define	STAGE_VERSION	PF_Stage_DEVELOP
-#define	BUILD_VERSION	1
+#define	BUILD_VERSION	3
 
 #define	NAME "Dummy Colorama"
 #define DESCRIPTION	"Replace the default color picker of Colorama with the one supplied by AE.\nApply this plugin before Colorama.\nby Dolag"
-
-enum {
-	GAMMA_INPUT = 0,	// default input layer 
-	GAMMA_NUM_PARAMS
-};
-
-enum {
-	GAMMA_DISK_ID = 1
-};
-
-typedef struct {
-	PF_Fixed	gamma_val;
-	A_u_char	lut[256];
-} Gamma_Table;
-
-typedef struct {
-	unsigned char* lut;
-} GammaInfo;
-
-#define	GAMMA_MIN		(0)	
-#define	GAMMA_MAX		(2)
-#define	GAMMA_BIG_MAX	(2)
-#define	GAMMA_DFLT		(1)
 
 extern "C" {
 
